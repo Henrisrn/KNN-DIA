@@ -2,10 +2,12 @@ import sys
 import pandas as pd
 import math
 import numpy as np
+import datetime as dt
+from sklearn.model_selection import train_test_split
 #Initialisation de valeur
 allLabels = ['0','1','2','3']
 nbLines = 2000
-nneigborgh = 3
+nneigborgh = 1
 
 def confusion_matrix(y_true, y_pred):
     matrix = np.zeros((len(allLabels), len(allLabels)))
@@ -26,25 +28,50 @@ def classification_report(y_true, y_pred):
         report += "{}\t{:.2f}\t\t{:.2f}\t{:.2f}\n".format(allLabels[i], precision, recall, f1_score)
     return report
 #Création de la dataframe à partir d'un fichier txt
-dataframe = pd.read_csv(sys.argv[1],sep=";")
+#dataframe = pd.read_csv(sys.argv[1],sep=";")
+dataframe = pd.read_csv("ProjetDIA//data.txt",sep=";")
 dataframe.columns = ["a","b","c","d","e","f","g","allLabels"]
-dataframe.to_excel("Entreeoffici.xlsx")
-dataframe = pd.read_excel("Entree.xlsx")
-test = pd.read_excel("Entre2.xlsx")
-print(test)
+#dataframe.to_excel("ProjetDIA//Entreeoffici.xlsx")
+print(dataframe)
+# Diviser le DataFrame de manière aléatoire
+mid_index = len(dataframe) // 2
+
+# Diviser le DataFrame en deux parties
+test = dataframe.iloc[mid_index:]
+dataframe = dataframe.iloc[:mid_index]
+
+# Réinitialiser les index
+dataframe = dataframe.reset_index(drop=True)
+test = test.reset_index(drop=True)
+test  = test.assign(allLabels=np.nan)
+
+# Afficher les deux sous-DataFrames
+print("DataFrame 1:\n", dataframe)
+print("\nDataFrame 2:\n", test)
 #Calcul de la longeur à partir des valeurs d'initialisation
 y_true = []
 y_pred = []
-for j in range(len(test)):
+for j in range(len(test)-1):
+    commence = dt.datetime.now()
     distance = []
     for i in range(len(dataframe)):
-            distance.append(math.sqrt((float(dataframe['a'][i])-float(test['a'][j]))**2 + (float(dataframe['b'][i])-float(test['b'][j]))**2 + (float(dataframe['c'][i])-float(test['c'][j]))**2 + (float(dataframe['d'][i])-float(test['d'][j]))**2 + (float(dataframe['e'][i])-float(test['e'][j]))**2 + (float(dataframe['f'][i])-float(test['f'][j]))**2 + (float(dataframe['g'][i])-float(test['g'][j]))**2 ))
+            somme_carres = 0
+            colonnes = ['a', 'b', 'c', 'd', 'e', 'f', 'g']
+            for col in colonnes:
+                somme_carres += (float(dataframe[col][i]) - float(test[col][j])) ** 2
+            distance.append(math.sqrt(somme_carres))
     dataframe['Calcul'] = distance
-    ligneplusproche = dataframe[dataframe['Calcul'] == min(dataframe['Calcul'])]
-    test["Class"][j] = ligneplusproche['allLabels'].values[0]
+    plusproche = sorted(distance)
+    classdesneigbour = []
+    for i in range(nneigborgh):
+        ligneplusproche = dataframe[dataframe['Calcul'] == plusproche[i]]
+        classdesneigbour.append(ligneplusproche['allLabels'].values[0])
+    nombredevaleur = {element:classdesneigbour.count(element) for element in set(classdesneigbour)}
+    #print("Temps pris : "+str(dt.datetime.now()-commence))
+    test["allLabels"][j] = max(nombredevaleur,key=nombredevaleur.get)
     y_true.append(dataframe["allLabels"][j])
-    y_pred.append(test["Class"][j])
-
+    y_pred.append(test["allLabels"][j])
+print("Fin calcul")
 # Affichage de conclusion
 conf_matrix = confusion_matrix(y_true, y_pred)
 print("Confusion Matrix:")
@@ -54,7 +81,6 @@ report = classification_report(y_true, y_pred)
 print("\nClassification Report:")
 print(report)
 
-#Affichage de conclusion
 dataframe.to_excel("Sortie1.xlsx")
 test.to_excel("Sortie2.xlsx")
 print('La class de notre fleur la plus proche est ',str(ligneplusproche['allLabels'].values[0]))
