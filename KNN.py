@@ -3,11 +3,11 @@ import pandas as pd
 import math
 import numpy as np
 import datetime as dt
-from sklearn.model_selection import train_test_split
+#from sklearn.neighbors import knn
 #Initialisation de valeur
 allLabels = ['0','1','2','3']
 nbLines = 2000
-nneigborgh = 1
+nneigborgh = 20
 
 def confusion_matrix(y_true, y_pred):
     matrix = np.zeros((len(allLabels), len(allLabels)))
@@ -18,7 +18,9 @@ def confusion_matrix(y_true, y_pred):
 def classification_report(y_true, y_pred):
     matrix = confusion_matrix(y_true, y_pred)
     report = "Class\tPrecision\tRecall\tF1-score\n"
+    R=0
     for i in range(len(allLabels)):
+        R+=matrix[i,i]
         tp = matrix[i, i]
         fp = np.sum(matrix[:, i]) - tp
         fn = np.sum(matrix[i, :]) - tp
@@ -26,10 +28,12 @@ def classification_report(y_true, y_pred):
         recall = tp / (tp + fn)
         f1_score = 2 * (precision * recall) / (precision + recall)
         report += "{}\t{:.2f}\t\t{:.2f}\t{:.2f}\n".format(allLabels[i], precision, recall, f1_score)
+    PT=R/len(allLabels)
+    print("Precision gobal: "+str(PT)+"%")
     return report
 #Création de la dataframe à partir d'un fichier txt
 #dataframe = pd.read_csv(sys.argv[1],sep=";")
-dataframe = pd.read_csv("ProjetDIA//data.txt",sep=";")
+dataframe = pd.read_csv("data.txt",sep=";")
 dataframe.columns = ["a","b","c","d","e","f","g","allLabels"]
 #dataframe.to_excel("ProjetDIA//Entreeoffici.xlsx")
 print(dataframe)
@@ -67,6 +71,7 @@ for j in range(len(test)-1):
         ligneplusproche = dataframe[dataframe['Calcul'] == plusproche[i]]
         classdesneigbour.append(ligneplusproche['allLabels'].values[0])
     nombredevaleur = {element:classdesneigbour.count(element) for element in set(classdesneigbour)}
+    print(nombredevaleur)
     #print("Temps pris : "+str(dt.datetime.now()-commence))
     test["allLabels"][j] = max(nombredevaleur,key=nombredevaleur.get)
     y_true.append(dataframe["allLabels"][j])
@@ -80,7 +85,6 @@ print(conf_matrix)
 report = classification_report(y_true, y_pred)
 print("\nClassification Report:")
 print(report)
-
 dataframe.to_excel("Sortie1.xlsx")
 test.to_excel("Sortie2.xlsx")
 print('La class de notre fleur la plus proche est ',str(ligneplusproche['allLabels'].values[0]))
