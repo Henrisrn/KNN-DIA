@@ -1,13 +1,11 @@
-import sys
 import pandas as pd
 import math
 import numpy as np
 import datetime as dt
-from sklearn.model_selection import train_test_split
 #Initialisation de valeur
 allLabels = ['0','1','2','3']
 nbLines = 2000
-nneigborgh = 1
+nneigborgh = 5
 #Creation de la matrice de confusion pour analyser nos resultat
 def confusion_matrix(y_true, y_pred):
     matrix = np.zeros((len(allLabels), len(allLabels)))
@@ -31,7 +29,6 @@ def classification_report(y_true, y_pred):
     print("Precision gobal: "+str(PT)+"%")
     return report
 #Création de la dataframe à partir d'un fichier txt
-#dataframe = pd.read_csv(sys.argv[1],sep=";")
 dataframe = pd.read_csv("ProjetDIA//data.txt",sep=";")
 dataframe.columns = ["a","b","c","d","e","f","g","allLabels"]
 dataframe.to_excel("ProjetDIA//Entreeoffici.xlsx")
@@ -49,7 +46,6 @@ test =  pd.read_csv("ProjetDIA//finalTest.txt",sep=";")
 test.columns = ["a","b","c","d","e","f","g"]
 test.to_excel("ProjetDIA//resTest.xlsx")
 test["allLabels"] = np.nan
-#test  = test.assign(allLabels=np.nan)
 
 # Afficher les deux sous-DataFrames
 print("DataFrame 1:\n", dataframe)
@@ -76,6 +72,7 @@ for j in range(len(test)):
     nombredevaleur = {element:classdesneigbour.count(element) for element in set(classdesneigbour)}
     print("Temps pris : "+str(dt.datetime.now()-commence))
     test["allLabels"][j] = max(nombredevaleur,key=nombredevaleur.get)
+    #Pour ajouter des valeur à notre matrice de confusion
     #y_true.append(vraitest["allLabels"][j])
     #y_pred.append(test["allLabels"][j])
 print("Fin calcul")
@@ -88,7 +85,6 @@ print("Confusion Matrix:")
 print("\nClassification Report:")
 #print(report)
 
-#dataframe.to_excel("Sortie1.xlsx")
 test.to_excel("SortieFinal.xlsx")
 df = test["allLabels"].astype(int)
 df.to_csv("HenriSeranoTDI.txt",header=False,index=False)
