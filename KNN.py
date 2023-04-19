@@ -35,14 +35,21 @@ def classification_report(y_true, y_pred):
 dataframe = pd.read_csv("ProjetDIA//data.txt",sep=";")
 dataframe.columns = ["a","b","c","d","e","f","g","allLabels"]
 dataframe.to_excel("ProjetDIA//Entreeoffici.xlsx")
+print(len(dataframe))
+deuxiemedata = pd.read_csv("ProjetDIA//preTest.txt",sep=";")
+dataframe.columns = ["a","b","c","d","e","f","g","allLabels"]
+dataframe = pd.concat([dataframe, deuxiemedata], ignore_index=True)
+print(len(deuxiemedata))
+# afficher la nouvelle dataframe combinée
+print(len(dataframe))
 # Diviser le DataFrame de manière aléatoire
 
 # Diviser le DataFrame en deux parties
-test =  pd.read_csv("ProjetDIA//preTest.txt",sep=";")
-test.columns = ["a","b","c","d","e","f","g","allLabels"]
+test =  pd.read_csv("ProjetDIA//finalTest.txt",sep=";")
+test.columns = ["a","b","c","d","e","f","g"]
 test.to_excel("ProjetDIA//resTest.xlsx")
-vraitest = test
-test  = test.assign(allLabels=np.nan)
+test["allLabels"] = np.nan
+#test  = test.assign(allLabels=np.nan)
 
 # Afficher les deux sous-DataFrames
 print("DataFrame 1:\n", dataframe)
@@ -69,18 +76,20 @@ for j in range(len(test)):
     nombredevaleur = {element:classdesneigbour.count(element) for element in set(classdesneigbour)}
     print("Temps pris : "+str(dt.datetime.now()-commence))
     test["allLabels"][j] = max(nombredevaleur,key=nombredevaleur.get)
-    y_true.append(vraitest["allLabels"][j])
-    y_pred.append(test["allLabels"][j])
+    #y_true.append(vraitest["allLabels"][j])
+    #y_pred.append(test["allLabels"][j])
 print("Fin calcul")
 # Affichage de conclusion
-conf_matrix = confusion_matrix(y_true, y_pred)
+#conf_matrix = confusion_matrix(y_true, y_pred)
 print("Confusion Matrix:")
-print(conf_matrix)
+#print(conf_matrix)
 
-report = classification_report(y_true, y_pred)
+#report = classification_report(y_true, y_pred)
 print("\nClassification Report:")
-print(report)
+#print(report)
 
-dataframe.to_excel("Sortie1.xlsx")
-test.to_excel("Sortie2.xlsx")
+#dataframe.to_excel("Sortie1.xlsx")
+test.to_excel("SortieFinal.xlsx")
+df = test["allLabels"].astype(int)
+df.to_csv("HenriSeranoTDI.txt",header=False,index=False)
 print('La class de notre fleur la plus proche est ',str(ligneplusproche['allLabels'].values[0]))
