@@ -8,13 +8,13 @@ from sklearn.model_selection import train_test_split
 allLabels = ['0','1','2','3']
 nbLines = 2000
 nneigborgh = 1
-
+#Creation de la matrice de confusion pour analyser nos resultat
 def confusion_matrix(y_true, y_pred):
     matrix = np.zeros((len(allLabels), len(allLabels)))
     for true, pred in zip(y_true, y_pred):
         matrix[int(true), int(pred)] += 1
     return matrix
-
+#creation de rapport des resultats
 def classification_report(y_true, y_pred):
     matrix = confusion_matrix(y_true, y_pred)
     report = "Class\tPrecision\tRecall\tF1-score\n"
